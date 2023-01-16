@@ -25,7 +25,7 @@ struct GameTurn{
     uint256[CAR_LEN] speed;
     uint256[CAR_LEN] y;
     uint256[CAR_LEN] shield;
-    
+
     uint256[ABILITY_LEN] costs;
     uint256[ABILITY_LEN] bought;
     uint256[] bananas;
@@ -80,7 +80,7 @@ contract MonacoTest is Test {
 
             // set the current car
             currentTurn.currentCar = address(monaco.cars(monaco.turns() % CAR_LEN));
-            
+
             // cache the current # abilities sold
             for (uint256 abilityIdx = 0; abilityIdx <= uint256(Monaco.ActionType.SHIELD); ++abilityIdx){
                 currentTurn.usedAbilities[abilityIdx] = monaco.getActionsSold(Monaco.ActionType(abilityIdx));

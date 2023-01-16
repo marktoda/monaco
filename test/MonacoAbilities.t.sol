@@ -65,7 +65,7 @@ contract MonacoAbilitiesTest is Test {
         CarReenter car = new CarReenter();
         monacoReentrancy.register(car);
         monacoReentrancy.register(new MockCar());
-        
+
         monacoReentrancy.play(1);
         // the success flag is true if reentrancy succeeds
         assertTrue(car.success() == false);
