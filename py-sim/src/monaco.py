@@ -1,4 +1,5 @@
 import copy
+import traceback
 from enum import Enum
 import math
 
@@ -91,7 +92,8 @@ class Game:
             actionsSoldBefore = copy.deepcopy(self.actionsSold)
             try:
                 currentCar.takeYourTurn(self, sorted_cars, self.bananas, yourCarIndex)
-            except:
+            except Exception:
+                traceback.print_exc()
                 # ignore raise in turn
                 self.cars[self.currentCarIndex] = (currentCar, carDataBefore)
                 self.actionsSold = actionsSoldBefore
@@ -136,6 +138,8 @@ class Game:
             self.turns += 1
 
     def buyAcceleration(self, amount):
+        if amount < 0:
+            raise Exception("Cannot buy negative acceleration")
         self.assertActive()
         cost = self.getAccelerateCost(amount)
 
@@ -146,6 +150,8 @@ class Game:
         return cost
 
     def buyShell(self, amount):
+        if amount < 0:
+            raise Exception("Cannot buy negative shells")
         self.assertActive()
         if amount == 0:
             raise Exception("Cannot buy 0 shells")
@@ -185,6 +191,8 @@ class Game:
         return cost
 
     def buySuperShell(self, amount):
+        if amount < 0:
+            raise Exception("Cannot buy negative shells")
         self.assertActive()
         if amount == 0:
             raise Exception("Cannot buy 0 shells")
@@ -227,6 +235,8 @@ class Game:
         return cost
 
     def buyShield(self, amount):
+        if amount < 0:
+            raise Exception("Cannot buy negative shield")
         self.assertActive()
         cost = self.getShieldCost(amount)
         (_, carData) = self.cars[self.currentCarIndex]

@@ -69,7 +69,7 @@ class GamePrinter:
         cars_display.clear()
 
         for state in self.car_state:
-            add_distance_str(cars_display, state.y)
+            self.add_distance_str(cars_display, state.y)
         cars_display.refresh()
 
         return cars_display
@@ -132,6 +132,19 @@ class GamePrinter:
 
         return result + "\n" * (max_lines - lines_used)
 
+    def add_distance_str(self, win, y):
+        total_ticks = curses.COLS - 50
+        tick_space = min(total_ticks, int(y / 1000 * total_ticks))
+        win.addstr("=" * (total_ticks + 2))
+        win.addstr("\n\n")
+        win.addstr("-" * tick_space)
+        win.addstr("/x\\", curses.A_BOLD)
+        win.addstr("-" * (total_ticks - tick_space - 1))
+        win.addstr("\n\n")
+        win.addstr("=" * (total_ticks + 2))
+        win.addstr("\n\n\n\n\n\n\n")
+
+
 
 def main(window):
     # read file name from command line
@@ -145,18 +158,6 @@ def main(window):
 
     printer = GamePrinter(window, data)
     printer.start()
-
-def add_distance_str(win, y):
-    total_ticks = curses.COLS - 50
-    tick_space = min(total_ticks, int(y / 1000 * total_ticks))
-    win.addstr("=" * (total_ticks + 2))
-    win.addstr("\n\n")
-    win.addstr("-" * tick_space)
-    win.addstr("/x\\", curses.A_BOLD)
-    win.addstr("-" * (total_ticks - tick_space - 1))
-    win.addstr("\n\n")
-    win.addstr("=" * (total_ticks + 2))
-    win.addstr("\n\n\n\n\n\n\n")
 
 if __name__ == '__main__':
     curses.wrapper(main)

@@ -1,22 +1,19 @@
-ACCEL_FLOOR = 15
-SHELL_FLOOR = 200
-SUPER_SHELL_FLOOR = 300
-SHIELD_FLOOR = 400
+import random
 
-class Floor:
+class Rando:
     def takeYourTurn(self, game, cars, bananas, idx):
         self.cars = cars
         self.idx = idx
         self.game = game
         self.bananas = bananas
-        if game.getAccelerateCost(1) < ACCEL_FLOOR:
-            self.accelerate(1)
-        if game.getShellCost(1) < SHELL_FLOOR:
+        self.accelerate(weighted_random(50))
+        self.shield(weighted_random(20))
+        if random.randrange(0, 100) < 25 and idx != 0:
             self.shell(1)
-        if idx == 2 and game.getSuperShellCost(1) < SUPER_SHELL_FLOOR:
+        if random.randrange(0, 100) < 25 and idx != 0:
             self.superShell(1)
-        if idx != 2 and game.getShieldCost(1) < SHIELD_FLOOR:
-            self.shield(1)
+        if random.randrange(0, 100) < 25 and idx != 2:
+            self.banana()
 
 
     def accelerate(self, amount):
@@ -44,4 +41,5 @@ class Floor:
         if car.balance > self.game.getBananaCost():
             car.balance -= self.game.buyBanana()
 
-
+def weighted_random(max):
+    return min(random.randint(0, max), random.randint(0, max), random.randint(0, max))
