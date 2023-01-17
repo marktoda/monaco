@@ -1,4 +1,4 @@
-from monaco import Game, State
+from monaco import Game, State, ActionType
 import json
 from tabulate import tabulate
 from enum import Enum
@@ -39,20 +39,23 @@ def run_game(cars_list):
     car_turns = [[], [], []]
     # each row is <accelerate, shell, superShell, shield, banana> prices
     prices = []
+    actions_sold = []
     while g.state != State.DONE and g.turns < 1000:
         g.play(1)
 
         for i, (_, carData) in enumerate(g.cars):
             car_turns[i].append((carData.balance, carData.y, carData.speed, carData.shield))
-            prices.append((g.getAccelerateCost(1), g.getShellCost(1), g.getSuperShellCost(1), g.getShieldCost(1), g.getBananaCost()))
 
+        prices.append((g.getAccelerateCost(1), g.getShellCost(1), g.getSuperShellCost(1), g.getShieldCost(1), g.getBananaCost()))
+        actions_sold.append((g.actionsSold[ActionType.ACCELERATE], g.actionsSold[ActionType.SHELL], g.actionsSold[ActionType.SUPER_SHELL], g.actionsSold[ActionType.SHIELD], g.actionsSold[ActionType.BANANA]))
 
-    return (car_turns, prices)
+    return (car_turns, prices, actions_sold)
 
 
 def write_games(games):
     for i, g in enumerate(games):
-        with open(f"./data/games-{i}.json", 'w') as f:
+        car_name_str = "-".join(g["cars"])
+        with open(f"./data/games-{car_name_str}-{i}.json", 'w') as f:
             data = json.dumps(g)
             f.write(data)
 
@@ -73,7 +76,7 @@ def main():
         }
 
     for i, p in enumerate(permutations):
-        (car_turns, prices) = run_game(create_cars_list(p))
+        (car_turns, prices, actions_sold) = run_game(create_cars_list(p))
         # pretty print prices
         # print(tabulate(prices, headers=["accelerate", "shell", "superShell", "shield", "banana"]))
 
@@ -94,7 +97,8 @@ def main():
                          "cars": list(map(lambda x: x.value, p)),
                          "turns": all_turns,
                          "prices": prices,
-                         "numTurns": len(all_turns)
+                         "numTurns": len(all_turns),
+                         "actionsSold": actions_sold,
                      })
 
     table = [['Car Type', 'Games Played', 'Wins', 'Losses', 'Ratio']]

@@ -1,7 +1,5 @@
-import random
 import copy
 from enum import Enum
-import wad
 import math
 
 PLAYERS_REQUIRED = 3
@@ -55,21 +53,6 @@ class CarData:
 
 
 class Game:
-    turns = 1
-    entropy = random.randint(0, 2**72)
-    # bananas in play, tracked by y position
-    bananas = []
-    actionsSold = {
-        ActionType.ACCELERATE: 0,
-        ActionType.SHELL: 0,
-        ActionType.SUPER_SHELL: 0,
-        ActionType.BANANA: 0,
-        ActionType.SHIELD: 0,
-    }
-    # (car, carData)
-    cars = []
-    state = State.WAITING
-
     def __init__(self):
         self.cars = []
         self.bananas = []
