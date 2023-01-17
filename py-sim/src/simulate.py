@@ -82,18 +82,20 @@ def main():
             # print("Car", j, p[j])
             # print(tabulate(c, headers=['Balance', 'Y', 'Speed', 'Shield'], tablefmt='fancy_grid'))
 
-            games.append({
-                             "cars": list(map(lambda x: x.value, p)),
-                             "turns": c,
-                             "prices": prices,
-                             "numTurns": len(c)
-                         })
             # update stats
             if c[len(c) - 1][1] >= 1000:
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
                 stats[p[j]]["wins"] += 1
             else:
                 stats[p[j]]["losses"] += 1
+
+        all_turns = [val for tup in zip(*car_turns) for val in tup]
+        games.append({
+                         "cars": list(map(lambda x: x.value, p)),
+                         "turns": all_turns,
+                         "prices": prices,
+                         "numTurns": len(all_turns)
+                     })
 
     table = [['Car Type', 'Games Played', 'Wins', 'Losses', 'Ratio']]
     for car_type in stats:

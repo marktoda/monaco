@@ -23,8 +23,8 @@ class GamePrinter:
     def start(self):
         turn = 0
         num_turns = self.game_data["numTurns"]
+        win = self.print_game(0)
         while turn <= num_turns:
-            win = self.print_game(turn)
             k = win.getkey()
             if k == "l":
                 turn = min(num_turns - 1, turn + 1)
@@ -36,6 +36,11 @@ class GamePrinter:
                 turn = max(0, turn - 5)
             else:
                 break
+            win = self.print_game(turn)
+
+    def get_car_state(self, idx):
+        [balance, y, speed, shield] = self.game_data["turns"][idx]
+        return CarState(balance, y, speed, shield)
 
     def print_game(self, turn_idx):
         self.window.clear()
@@ -51,8 +56,10 @@ class GamePrinter:
         cars_display = curses.newwin(int(curses.LINES / 2), curses.COLS, 5, 25)
         cars_display.clear()
 
-        [balance, y, speed, shield] = self.game_data["turns"][turn_idx]
-        self.car_state[(turn_idx + 1) % 3] = CarState(balance, y, speed, shield)
+        car_idx = (turn_idx + 1) % 3
+        self.car_state[car_idx] = self.get_car_state(turn_idx)
+        self.car_state[(car_idx + 2) % 3] = default_car_state() if turn_idx < 1 else self.get_car_state(turn_idx - 1)
+        self.car_state[(car_idx + 1) % 3] = default_car_state() if turn_idx < 2 else self.get_car_state(turn_idx - 2)
 
         for state in self.car_state:
             cars_display.addstr(get_distance_str(state.y))
