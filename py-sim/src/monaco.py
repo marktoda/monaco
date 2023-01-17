@@ -1,4 +1,5 @@
 import random
+import copy
 from enum import Enum
 import wad
 import math
@@ -48,8 +49,9 @@ class CarData:
     y = 0
     shield = 0
 
-    def __init__(self):
+    def __init__(self, idx):
         self.balance = STARTING_BALANCE
+        self.idx = idx
 
 
 class Game:
@@ -85,7 +87,7 @@ class Game:
         if len(self.cars) + 1 > PLAYERS_REQUIRED:
             raise Exception("Max players")
 
-        self.cars.append((car, CarData()))
+        self.cars.append((car, CarData(len(self.cars))))
         if len(self.cars) == PLAYERS_REQUIRED:
             self.state = State.ACTIVE
 
@@ -93,9 +95,25 @@ class Game:
         self.assertActive()
 
         for _ in range(turnsToPlay):
-            yourCarIndex = self.turns % PLAYERS_REQUIRED
-            (currentCar, currentCarData) = self.cars[yourCarIndex]
-            currentCar.takeYourTurn(self, self.cars, self.bananas, yourCarIndex)
+            (currentCar, currentCarData) = self.cars[self.turns % PLAYERS_REQUIRED]
+            sorted_cars = self.getCarsSortedByY()
+            self.currentCarIndex = self.turns % PLAYERS_REQUIRED
+            yourCarIndex = 0
+            for i, car in enumerate(sorted_cars):
+                if car.idx == currentCarData.idx:
+                    yourCarIndex = i
+                    break
+
+            carDataBefore = copy.deepcopy(currentCarData)
+            actionsSoldBefore = copy.deepcopy(self.actionsSold)
+            try:
+                currentCar.takeYourTurn(self, sorted_cars, self.bananas, yourCarIndex)
+            except:
+                # ignore raise in turn
+                self.cars[self.currentCarIndex] = (currentCar, carDataBefore)
+                self.actionsSold = actionsSoldBefore
+                print(f"Turn failed {self.currentCarIndex}")
+                pass
 
             self.bananas = sorted(self.bananas)
             for i in range(PLAYERS_REQUIRED):
@@ -134,23 +152,24 @@ class Game:
 
             self.turns += 1
 
-    def buyAcceleration(self, carIdx, amount):
+    def buyAcceleration(self, amount):
         self.assertActive()
-        cost = self.getAccelerationCost(amount)
+        cost = self.getAccelerateCost(amount)
 
-        (_, carData) = self.cars[carIdx]
-        self.purchase(carIdx, cost)
+        (_, carData) = self.cars[self.currentCarIndex]
+        self.purchase(self.currentCarIndex, cost)
         carData.speed += amount
         self.actionsSold[ActionType.ACCELERATE] += amount
+        return cost
 
-    def buyShell(self, carIdx, amount):
+    def buyShell(self, amount):
         self.assertActive()
         if amount == 0:
             raise Exception("Cannot buy 0 shells")
         cost = self.getShellCost(amount)
 
-        (_, carData) = self.cars[carIdx]
-        self.purchase(carIdx, cost)
+        (_, carData) = self.cars[self.currentCarIndex]
+        self.purchase(self.currentCarIndex, cost)
         self.actionsSold[ActionType.SHELL] += amount
 
         closestCar = None
@@ -180,14 +199,16 @@ class Game:
             # shell em
             if closestCar.shield == 0 and closestCar.speed > POST_SHELL_SPEED:
                 closestCar.speed = POST_SHELL_SPEED
+        return cost
 
-    def buySuperShell(self, carIdx, amount):
+    def buySuperShell(self, amount):
+        print("SUPER SHELL", self.turns)
         self.assertActive()
         if amount == 0:
             raise Exception("Cannot buy 0 shells")
         cost = self.getSuperShellCost(amount)
-        (_, carData) = self.cars[carIdx]
-        self.purchase(carIdx, cost)
+        (_, carData) = self.cars[self.currentCarIndex]
+        self.purchase(self.currentCarIndex, cost)
         self.actionsSold[ActionType.SUPER_SHELL] += amount
 
         for i in range(PLAYERS_REQUIRED):
@@ -211,33 +232,39 @@ class Game:
         for _ in range(num_to_pop):
             self.bananas.pop()
         self.bananas = sorted(self.bananas)
+        return cost
 
-    def buyBanana(self, carIdx):
+    def buyBanana(self):
         self.assertActive()
         cost = self.getBananaCost()
-        (_, carData) = self.cars[carIdx]
-        self.purchase(carIdx, cost)
+        (_, carData) = self.cars[self.currentCarIndex]
+        self.purchase(self.currentCarIndex, cost)
         self.actionsSold[ActionType.BANANA] += 1
         self.bananas.append(carData.y)
         self.bananas = sorted(self.bananas)
+        return cost
 
-    def buyShield(self, carIdx, amount):
+    def buyShield(self, amount):
         self.assertActive()
         cost = self.getShieldCost(amount)
-        (_, carData) = self.cars[carIdx]
-        self.purchase(carIdx, cost)
+        (_, carData) = self.cars[self.currentCarIndex]
+        self.purchase(self.currentCarIndex, cost)
         self.actionsSold[ActionType.SHIELD] += amount
         carData.shield += 1 + amount
+        return cost
 
 
     def purchase(self, carIdx, cost):
         (_, carData) = self.cars[carIdx]
+        # sim quirk: in solidity if failure during turn we revert the turn
+        # revert not as easy here so we just stop the turn but keep whatever was already done
+        # TODO: could journal purchases and only execute if no revert
         if carData.balance < cost:
             raise Exception("Can't afford")
         carData.balance -= cost
 
 
-    def getAccelerationCost(self, amount):
+    def getAccelerateCost(self, amount):
         sum = 0
         for i in range(amount):
             sum += computeActionPrice(
@@ -295,6 +322,17 @@ class Game:
             raise Exception("Not active")
 
 
+    def getCarsSortedByY(self):
+        sortedCars = list(map(lambda x: x[1], copy.deepcopy(self.cars)))
+        for i in range(PLAYERS_REQUIRED):
+            for j in range(i + 1, PLAYERS_REQUIRED):
+                if sortedCars[j].y > sortedCars[i].y:
+                    temp = sortedCars[i]
+                    sortedCars[i] = sortedCars[j]
+                    sortedCars[j] = temp
+        return sortedCars
+
+
 def computeActionPrice(targetPrice, perTurnPriceDecrease, turnsSinceStart, sold, sellPerTurnWad):
     perTurn = (sold + 1) / sellPerTurnWad
     turnStuff = (turnsSinceStart - 1) - perTurn
@@ -305,8 +343,15 @@ def computeActionPrice(targetPrice, perTurnPriceDecrease, turnsSinceStart, sold,
 
 
 class MockCar:
+    buy = 0
+
     def takeYourTurn(self, game, cars, bananas, idx):
-        pass
+        if self.buy > 0:
+            game.buyAcceleration(self.buy)
+
+    def buyAcceleration(self, amt):
+        self.buy = amt
+
 
 
 if __name__ == '__main__':

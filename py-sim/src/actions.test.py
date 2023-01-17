@@ -12,7 +12,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].shield = 0
         game.cars[0][1].y = 200
 
-        game.buyShell(1, 1)
+        game.currentCarIndex = 1
+        game.buyShell(1)
         self.assertEqual(game.cars[0][1].speed, 1)
         self.assertEqual(game.cars[0][1].y, 200)
         self.assertEqual(game.cars[1][1].balance, 16019)
@@ -27,17 +28,21 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].shield = 0
         game.cars[0][1].y = 200
 
+        game.currentCarIndex = 1
         with self.assertRaises(Exception):
-            game.buyShell(1, 10)
+            game.buyShell(10)
 
     def testAccelerate(self):
         game = monaco.Game()
         game.register(monaco.MockCar())
         game.register(monaco.MockCar())
         game.register(monaco.MockCar())
-        game.buyAcceleration(0, 1)
-        game.buyAcceleration(1, 5)
-        game.buyAcceleration(2, 15)
+        game.currentCarIndex = 0
+        game.buyAcceleration(1)
+        game.currentCarIndex = 1
+        game.buyAcceleration(5)
+        game.currentCarIndex = 2
+        game.buyAcceleration(15)
 
         self.assertEqual(game.cars[0][1].speed, 1)
         self.assertEqual(game.cars[0][1].y, 0)
@@ -64,9 +69,11 @@ class ActionsTest(unittest.TestCase):
         game.cars[1][1].speed = 100
 
         # the front car buys a shield
-        game.buyShield(0, 1)
+        game.currentCarIndex = 0
+        game.buyShield(1)
         # the behind car buys a shell
-        game.buyShell(1, 1)
+        game.currentCarIndex = 1
+        game.buyShell(1)
         self.assertEqual(game.cars[0][1].speed, 100)
 
     def testShieldDuration(self):
@@ -76,7 +83,8 @@ class ActionsTest(unittest.TestCase):
         game.register(monaco.MockCar())
         game.play(18)
 
-        game.buyShield(0, 3)
+        game.currentCarIndex = 0
+        game.buyShield(3)
         for i in range(4):
             game.play(1)
             self.assertEqual(game.cars[0][1].shield, 3 - i)
@@ -95,7 +103,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].speed = 200
         game.cars[0][1].y = 0
 
-        game.buySuperShell(0, 1)
+        game.currentCarIndex = 0
+        game.buySuperShell(1)
         self.assertEqual(game.cars[0][1].speed, 200)
         self.assertEqual(game.cars[1][1].speed, 1)
         self.assertEqual(game.cars[2][1].speed, 1)
@@ -113,8 +122,10 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].speed = 200
         game.cars[0][1].y = 0
 
-        game.buyShield(1, 1)
-        game.buySuperShell(0, 1)
+        game.currentCarIndex = 1
+        game.buyShield(1)
+        game.currentCarIndex = 0
+        game.buySuperShell(1)
         self.assertEqual(game.cars[0][1].speed, 200)
         self.assertEqual(game.cars[1][1].speed, 1)
         self.assertEqual(game.cars[2][1].speed, 1)
@@ -128,7 +139,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[1][1].speed = 200
         game.cars[1][1].y = 100
 
-        game.buyBanana(1)
+        game.currentCarIndex = 1
+        game.buyBanana()
         self.assertEqual(len(game.bananas), 1)
         self.assertEqual(game.bananas[0], 100)
 
@@ -143,7 +155,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[1][1].y = bananaPos
         game.cars[2][1].speed = 60
         game.cars[2][1].y = 0
-        game.buyBanana(1)
+        game.currentCarIndex = 1
+        game.buyBanana()
 
         game.play(1)
         self.assertEqual(game.bananas[0], bananaPos)
@@ -193,7 +206,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[1][1].y = car2Position
 
         # behind car buys shell which should kill the banana
-        game.buyShell(1, 1)
+        game.currentCarIndex = 1
+        game.buyShell(1)
         game.play(1)
 
         # no more banana
@@ -222,7 +236,8 @@ class ActionsTest(unittest.TestCase):
 
         # behind car buys shell which should kill the banana
         self.assertEqual(len(game.bananas), 3)
-        game.buyShell(1, 1)
+        game.currentCarIndex = 1
+        game.buyShell(1)
         game.play(1)
 
         # no more banana
@@ -253,7 +268,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].y = 20
 
         self.assertEqual(len(game.bananas), 6)
-        game.buySuperShell(1, 1)
+        game.currentCarIndex = 1
+        game.buySuperShell(1)
         # should kill all bananas
         self.assertEqual(len(game.bananas), 0)
         self.assertEqual(game.cars[1][1].speed, 100)
@@ -277,7 +293,8 @@ class ActionsTest(unittest.TestCase):
         game.cars[0][1].y = 20
 
         self.assertEqual(len(game.bananas), 6)
-        game.buySuperShell(1, 1)
+        game.currentCarIndex = 1
+        game.buySuperShell(1)
         # should kill all bananas
         self.assertEqual(len(game.bananas), 3)
         self.assertEqual(game.bananas[0], 10)

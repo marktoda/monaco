@@ -584,7 +584,7 @@ contract Monaco {
         uint256 turnsSinceStart,
         uint256 sold,
         int256 sellPerTurnWad
-    ) internal pure returns (uint256) {
+    ) internal view returns (uint256) {
         unchecked {
             // prettier-ignore
             return uint256(

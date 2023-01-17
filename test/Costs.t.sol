@@ -2,7 +2,6 @@
 pragma solidity 0.8.17;
 
 import "forge-std/Test.sol";
-import "forge-std/console2.sol";
 
 import "../src/Monaco.sol";
 import "../src/cars/ExampleCar.sol";
@@ -11,6 +10,7 @@ import "../src/cars/samples/ThePackage.sol";
 
 import {c000r} from "../src/cars/samples/c000r.sol";
 import {PermaShield} from "../src/cars/samples/PermaShield.sol";
+import {Nothing} from "../src/cars/samples/Nothing.sol";
 import {Sauce} from "../src/cars/samples/Saucepoint.sol";
 import {MadCar} from "../src/cars/samples/MadCar.sol";
 import {Floor} from "../src/cars/samples/Floor.sol";
@@ -43,17 +43,24 @@ contract CostTest is Test {
 
     Monaco monaco;
     address[CAR_LEN] cars;
+    Nothing w1;
 
     function setUp() public {
         monaco = new Monaco();
+        w1 = new Nothing();
+        ICar w2 = new Nothing();
+        ICar w3 = new Nothing();
+        monaco.register(w1);
+        monaco.register(w2);
+        monaco.register(w3);
     }
 
     function testAccelerationCost() public {
-        console2.log("Acceleration costs");
-        console2.log("1", monaco.getShieldCost(1));
-        console2.log("2", monaco.getShieldCost(2));
-        console2.log("3", monaco.getShieldCost(3));
-        console2.log("4", monaco.getShieldCost(4));
+        monaco.play(10);
+        w1.buyAcceleration(1);
+        monaco.play(10);
+        w1.buyAcceleration(5);
+        monaco.play(100);
     }
 
 }

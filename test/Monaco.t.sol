@@ -8,6 +8,8 @@ import "../src/cars/ExampleCar.sol";
 
 import "../src/cars/samples/ThePackage.sol";
 
+
+import {ExampleCar} from "../src/cars/ExampleCar.sol";
 import {c000r} from "../src/cars/samples/c000r.sol";
 import {PermaShield} from "../src/cars/samples/PermaShield.sol";
 import {Sauce} from "../src/cars/samples/Saucepoint.sol";
@@ -51,6 +53,9 @@ contract MonacoTest is Test {
         ICar w1 = new PermaShield();
         ICar w2 = new Sauce();
         ICar w3 = new Floor();
+        emit log_named_address("\tPermaShield", address(w1));
+        emit log_named_address("\tSauce", address(w2));
+        emit log_named_address("\tFloor", address(w3));
 
         monaco.register(w1);
         monaco.register(w2);
