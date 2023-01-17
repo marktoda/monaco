@@ -1,4 +1,5 @@
 from monaco import Game, State
+import json
 from tabulate import tabulate
 from enum import Enum
 from cars.ExampleCar import ExampleCar
@@ -9,10 +10,10 @@ import itertools
 
 
 class CarType(Enum):
-    EXAMPLE_CAR = 1
-    PERMA_SHIELD = 2
-    FLOOR = 3
-    SAUCE = 4
+    EXAMPLE_CAR = "ExampleCar"
+    PERMA_SHIELD = "PermaShield"
+    FLOOR = "Floor"
+    SAUCE = "Sauce"
 
 def create_car(type):
     if type == CarType.EXAMPLE_CAR:
@@ -49,12 +50,21 @@ def run_game(cars_list):
     return (car_turns, prices)
 
 
+def write_games(games):
+    for i, g in enumerate(games):
+        with open(f"./data/games-{i}.json", 'w') as f:
+            data = json.dumps(g)
+            f.write(data)
+
+
 def main():
     # double list to allow for multiple instances of same type
     # car_options = list(CarType) + list(CarType)
     car_options = list(CarType)
     permutations = list(itertools.permutations(car_options, 3))
     # permutations = list(itertools.combinations_with_replacement(car_options, 3))
+
+    games = []
     stats = {}
     for opt in car_options:
         stats[opt] = {
@@ -72,6 +82,12 @@ def main():
             # print("Car", j, p[j])
             # print(tabulate(c, headers=['Balance', 'Y', 'Speed', 'Shield'], tablefmt='fancy_grid'))
 
+            games.append({
+                             "cars": list(map(lambda x: x.value, p)),
+                             "turns": c,
+                             "prices": prices,
+                             "numTurns": len(c)
+                         })
             # update stats
             if c[len(c) - 1][1] >= 1000:
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
@@ -85,6 +101,8 @@ def main():
         losses = stats[car_type]["losses"]
         table.append([car_type, wins + losses, wins, losses, wins / (wins + losses)])
     print(tabulate(table, headers='firstrow', tablefmt='fancy_grid'))
+
+    write_games(games)
 
 
 if __name__ == '__main__':
