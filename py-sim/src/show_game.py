@@ -62,14 +62,14 @@ class GamePrinter:
         header_display.clear()
         header_display.addstr(f"--------------- DISPLAYING GAME -- TURN {turn_idx} ---------------\n")
         if turn_idx == len(self.turns) - 1:
-            header_display.addstr(f"###-- GAME OVER --###")
+            header_display.addstr(f"###-- GAME OVER --###", curses.A_STANDOUT)
         header_display.refresh()
 
         cars_display = curses.newwin(int(curses.LINES / 2), curses.COLS, 5, 25)
         cars_display.clear()
 
         for state in self.car_state:
-            cars_display.addstr(get_distance_str(state.y))
+            add_distance_str(cars_display, state.y)
         cars_display.refresh()
 
         return cars_display
@@ -82,7 +82,7 @@ class GamePrinter:
         for i, car in enumerate(self.game_data["cars"]):
             is_turn = (turn_idx + 1) % 3 == i
             state = self.car_state[i]
-            car_name_display.addstr(f"{car if not is_turn else '> ' + car}\n")
+            car_name_display.addstr(f"{car if not is_turn else '> ' + car}\n", curses.A_BOLD if is_turn else 0)
             car_name_display.addstr(f"\ty: {state.y}\n")
             car_name_display.addstr(f"\tspeed: {state.speed}\n")
             car_name_display.addstr(f"\tbalance: {state.balance}\n")
@@ -146,17 +146,17 @@ def main(window):
     printer = GamePrinter(window, data)
     printer.start()
 
-def get_distance_str(y):
+def add_distance_str(win, y):
     total_ticks = curses.COLS - 50
     tick_space = min(total_ticks, int(y / 1000 * total_ticks))
-    res = ""
-    for _ in range(tick_space):
-        res += "-"
-    res += "x"
-    for _ in range(total_ticks - tick_space - 1):
-        res += "-"
-    res += "\n\n\n\n\n\n\n\n\n\n\n"
-    return res
+    win.addstr("=" * (total_ticks + 2))
+    win.addstr("\n\n")
+    win.addstr("-" * tick_space)
+    win.addstr("/x\\", curses.A_BOLD)
+    win.addstr("-" * (total_ticks - tick_space - 1))
+    win.addstr("\n\n")
+    win.addstr("=" * (total_ticks + 2))
+    win.addstr("\n\n\n\n\n\n\n")
 
 if __name__ == '__main__':
     curses.wrapper(main)
