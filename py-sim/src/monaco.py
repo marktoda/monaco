@@ -202,7 +202,6 @@ class Game:
         return cost
 
     def buySuperShell(self, amount):
-        print("SUPER SHELL", self.turns)
         self.assertActive()
         if amount == 0:
             raise Exception("Cannot buy 0 shells")

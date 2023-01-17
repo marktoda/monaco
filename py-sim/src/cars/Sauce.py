@@ -8,7 +8,7 @@ def hasEnoughBalance(car, cost):
     return car.balance > cost
 
 def updateBalance(car, cost):
-    return car.balance > cost
+    car.balance -= cost
 
 class CarData:
     balance = 0
@@ -93,17 +93,20 @@ class Sauce:
             action["shield"] += 1
             self.buyAsMuchAccelerationAsSensible(game, ourCar, idx)
 
-        if action["accelerate"] != 0:
-            game.buyAcceleration(action["accelerate"])
+        if action["accelerate"] != 0 and hasEnoughBalance(ourCar, game.getAccelerateCost(action["accelerate"])):
+            updateBalance(ourCar, game.buyAcceleration(action["accelerate"]))
         if action["shell"] != 0:
             if idx != 0 and 0 < leadCar.shield:
                 action["shell"] += 1
-            game.buyShell(action["shell"])
+            if hasEnoughBalance(ourCar, game.getShellCost(action["shell"])):
+                updateBalance(ourCar, game.buyShell(action["shell"]))
         if action["shield"] != 0:
-            game.buyShield(action["shield"])
+            if hasEnoughBalance(ourCar, game.getShieldCost(action["shield"])):
+                updateBalance(ourCar, game.buyShield(action["shield"]))
         if action["superShell"] != 0:
             if idx != 0 and 0 < leadCar.shield:
                 action["superShell"] += 1
-            game.buySuperShell(action["superShell"])
+            if hasEnoughBalance(ourCar, game.getSuperShellCost(action["superShell"])):
+                updateBalance(ourCar, game.buySuperShell(action["superShell"]))
 
 

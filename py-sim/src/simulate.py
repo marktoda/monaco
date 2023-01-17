@@ -46,7 +46,6 @@ def run_game(cars_list):
             prices.append((g.getAccelerateCost(1), g.getShellCost(1), g.getSuperShellCost(1), g.getShieldCost(1), g.getBananaCost()))
 
 
-    print(g.actionsSold)
     return (car_turns, prices)
 
 
@@ -66,12 +65,12 @@ def main():
     for i, p in enumerate(permutations):
         (car_turns, prices) = run_game(create_cars_list(p))
         # pretty print prices
-        print(tabulate(prices, headers=["accelerate", "shell", "superShell", "shield", "banana"]))
+        # print(tabulate(prices, headers=["accelerate", "shell", "superShell", "shield", "banana"]))
 
         # print game
         for j, c in enumerate(car_turns):
-            print("Car", j, p[j])
-            print(tabulate(c, headers=['Balance', 'Y', 'Speed', 'Shield'], tablefmt='fancy_grid'))
+            # print("Car", j, p[j])
+            # print(tabulate(c, headers=['Balance', 'Y', 'Speed', 'Shield'], tablefmt='fancy_grid'))
 
             # update stats
             if c[len(c) - 1][1] >= 1000:
