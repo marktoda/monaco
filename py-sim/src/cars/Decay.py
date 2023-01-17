@@ -1,5 +1,6 @@
-ACCEL_FLOOR = 5
-FLOOR = 2
+ACCEL_LOW_FLOOR = 5
+ACCEL_HIGH_FLOOR = 5
+FLOOR = 5
 
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
@@ -39,17 +40,22 @@ class Decay:
                 return
 
         # always buy accel if cheap, ramp up later on in game
-        if game.getAccelerateCost(1) < ACCEL_FLOOR:
+        if game.getAccelerateCost(1) < ACCEL_LOW_FLOOR:
             self.accelerate(int(5 + self.turns / 5))
 
+        # getting close to the end
+        if overall_turns_to_win < 10:
+            if game.getAccelerateCost(1) < ACCEL_HIGH_FLOOR:
+                self.accelerate(5 + (10 // overall_turns_to_win))
+
         # literally so cheap why not
-        if game.getShellCost(1) < FLOOR:
+        if game.getShellCost(1) < FLOOR + (100 // overall_turns_to_win):
             self.shell(1)
-        if game.getSuperShellCost(1) < FLOOR:
+        if game.getSuperShellCost(1) < FLOOR + (200 // overall_turns_to_win):
             self.superShell(1)
-        if game.getBananaCost() < FLOOR:
+        if game.getBananaCost() < FLOOR + (20 // overall_turns_to_win):
             self.banana()
-        if game.getShieldCost(1) < FLOOR:
+        if game.getShieldCost(1) < FLOOR + (20 // overall_turns_to_win):
             self.shield(1)
 
 
