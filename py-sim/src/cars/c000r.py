@@ -42,7 +42,7 @@ class C000r:
         if idx != 0:
             frontCarSpeed = cars[idx - 1].speed
             if ourCar.balance >= shellCost and shellCost < 2000 and ((frontCarSpeed > ourCar.speed and frontCarSpeed > 4) or frontCarSpeed > 8):
-                ourCar.balance -= game.buyShell(1)
+                self.shell(1)
                 shellCost = 15001
             bigMove = game.getAccelerateCost(7)
             if ourCar.balance >= bigMove and bigMove < 1000:
@@ -65,10 +65,18 @@ class C000r:
                 self.shell(1)
 
         if ourCar.balance > (2000 if cars[0].y < 800 else 500) and ourCar.speed < 6:
-            game.accelerate(2 if idx == 0 else 4)
+            self.accelerate(2 if idx == 0 else 4)
+        elif costToCatchUp != 0 and ourCar.balance > costToCatchUp and costToCatchUp < 1000:
+            catchUpAccelAmount = max(0, (cars[1].speed - ourCar.speed) // (1 if costToCatchUp < 50 else 2))
+            self.accelerate(catchUpAccelAmount)
+        else:
+            accelTarget = 5 if ourCar.y > 800 else 2
+            costToAccelerate = game.getAccelerateCost(accelTarget)
+            if ourCar.balance > 200 and ourCar.balance > costToAccelerate and costToAccelerate < (50 if ourCar.y > 800 else 24):
+                self.accelerate(accelTarget)
 
-
-
+        if idx != 0 and cars[0].y > 700 and ourCar.balance > cars[0].balance * 2 and ourCar.balance > 220:
+            self.accelerate(5)
 
 
     def accelerate(self, amount):
