@@ -78,15 +78,15 @@ class Sauce:
                 action["accelerate"] += 1
             if idx != 0 and speedDelta > 5:
                 action["accelerate"] += 1
-            if idx == 2 and cars[0].speed < 5:
-                action["superShell"] += 1
+            # if idx == 2 and cars[0].speed < 5:
+            #     action["superShell"] += 1
         elif MID_GAME <= point and point < LATE_GAME:
             if idx == 2:
                 action["accelerate"] += 1
                 if 100 < leadDistance:
                     action["shell"] += 1
-                if cars[0].speed < 5:
-                    action["superShell"] += 1
+                # if cars[0].speed < 5:
+                #     action["superShell"] += 1
         elif LATE_GAME <= point and point < FLAT_OUT:
             action["shell"] += 1
         else:
@@ -104,8 +104,6 @@ class Sauce:
             if hasEnoughBalance(ourCar, game.getShieldCost(action["shield"])):
                 updateBalance(ourCar, game.buyShield(action["shield"]))
         if action["superShell"] != 0:
-            if idx != 0 and 0 < leadCar.shield:
-                action["superShell"] += 1
             if hasEnoughBalance(ourCar, game.getSuperShellCost(action["superShell"])):
                 updateBalance(ourCar, game.buySuperShell(action["superShell"]))
 

@@ -28,13 +28,6 @@ class GamePrinter:
         self.game_data = game_data
         self.turns = group_turns(self.game_data["turns"])
         self.car_state = [default_car_state(), default_car_state(), default_car_state()]
-        self.actionsSold = {
-            ActionType.ACCELERATE: 0,
-            ActionType.SHELL: 0,
-            ActionType.SUPER_SHELL: 0,
-            ActionType.BANANA: 0,
-            ActionType.SHIELD: 0,
-        }
 
     def start(self):
         turn = 0
@@ -78,11 +71,13 @@ class GamePrinter:
         for state in self.car_state:
             cars_display.addstr(get_distance_str(state.y))
         cars_display.refresh()
+
         return cars_display
 
     def print_sidebar(self, turn_idx):
         car_name_display = curses.newwin(int(curses.LINES / 2), 50, 5, 0)
         car_name_display.clear()
+
 
         for i, car in enumerate(self.game_data["cars"]):
             is_turn = (turn_idx + 1) % 3 == i
@@ -92,9 +87,10 @@ class GamePrinter:
             car_name_display.addstr(f"\tspeed: {state.speed}\n")
             car_name_display.addstr(f"\tbalance: {state.balance}\n")
             car_name_display.addstr(f"\tshield: {state.shield}\n\n")
-            car_name_display.addstr(f"\tACTIONS:\n")
-            car_name_display.addstr(f"\t- accelerate")
-            car_name_display.addstr(f"\n\n\n\n")
+            if not is_turn:
+                car_name_display.addstr(f"\n\n\n\n\n")
+            else:
+                car_name_display.addstr(self.get_action_str(turn_idx))
         car_name_display.refresh()
 
         commands_display = curses.newwin(int(curses.LINES / 4), 25, int(curses.LINES / 2), 0)
@@ -105,6 +101,36 @@ class GamePrinter:
         commands_display.addstr("H - back 5 turns\n")
         commands_display.addstr("q/ctrl+c - quit\n")
         commands_display.refresh()
+
+    def get_action_str(self, turn_idx):
+        result = ""
+        result += f"\tACTIONS:\n"
+
+        lines_used = 0
+        max_lines = 5
+        [accel, shell, super, shield, banana] = self.game_data["actionsSold"][turn_idx]
+        [prev_accel, prev_shell, prev_super, prev_shield, prev_banana] = self.game_data["actionsSold"][turn_idx - 1] if turn_idx > 0 else (0, 0, 0, 0, 0)
+        if accel > prev_accel:
+            result += f"\t- Accel {accel - prev_accel}\n"
+            lines_used += 1
+
+        if shell > prev_shell:
+            result += f"\t- Shell {shell - prev_shell}\n"
+            lines_used += 1
+
+        if super > prev_super:
+            result += f"\t- Super {super - prev_super}\n"
+            lines_used += 1
+
+        if banana > prev_banana:
+            result += f"\t- Banana {banana - prev_banana}\n"
+            lines_used += 1
+
+        if shield > prev_shield:
+            result += f"\t- Shield {shield - prev_shield}\n"
+            lines_used += 1
+
+        return result + "\n" * (max_lines - lines_used)
 
 
 def main(window):
