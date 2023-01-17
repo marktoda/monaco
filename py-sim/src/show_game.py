@@ -54,9 +54,9 @@ class GamePrinter:
 
     def print_game(self, turn_idx):
         self.set_car_states(turn_idx)
+        self.print_sidebar(turn_idx)
 
         self.window.clear()
-        self.print_sidebar(turn_idx)
 
         header_display = curses.newwin(5, curses.COLS, 0, 0)
         header_display.clear()
@@ -100,6 +100,15 @@ class GamePrinter:
         commands_display.addstr("L - forward 5 turns\n")
         commands_display.addstr("H - back 5 turns\n")
         commands_display.addstr("q/ctrl+c - quit\n")
+
+        [accel, shell, super, shield, banana] = self.game_data["prices"][turn_idx]
+        commands_display.addstr("\n\n\n")
+        commands_display.addstr("Prices:\n")
+        commands_display.addstr(f"\tAccelerate: {accel}\n")
+        commands_display.addstr(f"\tShell: {shell}\n")
+        commands_display.addstr(f"\tSuper: {super}\n")
+        commands_display.addstr(f"\tShield: {shield}\n")
+        commands_display.addstr(f"\tBanana: {banana}\n")
         commands_display.refresh()
 
     def get_action_str(self, turn_idx):

@@ -4,6 +4,7 @@ import json
 from tabulate import tabulate
 from enum import Enum
 from cars.LearningCar import LearningCar
+from cars.Decay import Decay
 from cars.ExampleCar import ExampleCar
 from cars.PermaShield import PermaShield
 from cars.Rando import Rando
@@ -20,6 +21,7 @@ class CarType(Enum):
     SAUCE = "Sauce"
     RANDO = "Random"
     LEARNING_CAR = "LearningCar"
+    DECAY = "Decay"
 
 stored_inputs=\
 [-5.92403588,-2.09961041,5.10842475,-1.63619372,1.56596772
@@ -53,6 +55,8 @@ def create_car(type):
         return Sauce()
     if type == CarType.RANDO:
         return Rando()
+    if type == CarType.DECAY:
+        return Decay()
     if type == CarType.LEARNING_CAR:
         return LearningCar(stored_inputs)
     else:

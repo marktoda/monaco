@@ -5,6 +5,7 @@ from enum import Enum
 from cars.ExampleCar import ExampleCar
 from cars.PermaShield import PermaShield
 from cars.LearningCar import LearningCar
+from cars.Decay import Decay
 from cars.Floor import Floor
 from cars.Sauce import Sauce
 from cars.Rando import Rando
@@ -18,6 +19,7 @@ class CarType(Enum):
     FLOOR = "Floor"
     SAUCE = "Sauce"
     RANDO = "Random"
+    DECAY = "Decay"
 
 stored_inputs=\
 [-2.7046551,6.94741019,6.10476945,5.6395508,-7.53900326,-1.08904729
@@ -46,6 +48,8 @@ def create_car(type):
         return Floor()
     if type == CarType.SAUCE:
         return Sauce()
+    if type == CarType.DECAY:
+        return Decay()
     if type == CarType.RANDO:
         return Rando()
     if type == CarType.LEARNING_CAR:
