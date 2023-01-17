@@ -1,6 +1,17 @@
 import unittest
 import monaco
 
+class OverflowBalanceTest:
+    overflow = False
+
+    def setOverflow(self, set):
+        self.overflow = set
+
+    def takeYourTurn(self, game, cars, bananas, idx):
+        game.buyShell(1)
+        if self.overflow:
+            game.buyAcceleration(10000000000)
+
 class ActionsTest(unittest.TestCase):
     def testShell(self):
         game = monaco.Game()
@@ -302,6 +313,24 @@ class ActionsTest(unittest.TestCase):
         self.assertEqual(game.bananas[2], 12)
         self.assertEqual(game.cars[1][1].speed, 100)
         self.assertEqual(game.cars[0][1].speed, 1)
+
+    def testRevert(self):
+        game = monaco.Game()
+        car = OverflowBalanceTest()
+        game.register(car)
+        game.register(monaco.MockCar())
+        game.register(monaco.MockCar())
+        car.setOverflow(True)
+        game.play(3)
+        self.assertEqual(game.actionsSold[monaco.ActionType.ACCELERATE], 0)
+        self.assertEqual(game.actionsSold[monaco.ActionType.SHELL], 0)
+        game.play(3)
+        self.assertEqual(game.actionsSold[monaco.ActionType.ACCELERATE], 0)
+        self.assertEqual(game.actionsSold[monaco.ActionType.SHELL], 0)
+        car.setOverflow(False)
+        game.play(3)
+        self.assertEqual(game.actionsSold[monaco.ActionType.ACCELERATE], 0)
+        self.assertEqual(game.actionsSold[monaco.ActionType.SHELL], 1)
 
 
 if __name__ == '__main__':
