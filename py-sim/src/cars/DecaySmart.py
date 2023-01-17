@@ -1,5 +1,4 @@
 ACCEL_LOW_FLOOR = 5
-ACCEL_HIGH_FLOOR = 20
 FLOOR = 5
 
 # The turn-based decay on prices seems v strong
@@ -34,27 +33,20 @@ class DecaySmart:
             self.accelerate(self.max_accel(ourCar.balance))
             return
 
+        # ACCEL DECISION MAKING
         # someone else is about to win
         if turns_to_lose == 0:
             self.stop_opponent(best_opponent_idx)
             self.accelerate(10)
             # avoid div/0
             turns_to_lose = 1
-        elif turns_to_lose < 4:
-            self.stop_opponent(best_opponent_idx, 200)
-            self.accelerate(20 // turns_to_lose)
-        elif turns_to_lose < 8:
+        elif turns_to_lose < 5:
             self.stop_opponent(best_opponent_idx, 100)
             self.accelerate(20 // turns_to_lose)
+        else:
+            # always buy accel if cheap, ramp up later on in game
+            self.accel_to_floor()
 
-        # always buy accel if cheap, ramp up later on in game
-        if game.getAccelerateCost(1) < ACCEL_LOW_FLOOR:
-            self.accelerate(int(5 + self.turns / 5))
-
-        # getting close to the end
-        if turns_to_lose < 10:
-            if game.getAccelerateCost(1) < ACCEL_HIGH_FLOOR + (20 // turns_to_lose):
-                self.accelerate(5 + (10 // turns_to_lose))
 
         # literally so cheap why not
         if game.getShellCost(1) < FLOOR + (100 // turns_to_lose):
@@ -65,6 +57,12 @@ class DecaySmart:
             self.banana()
         if game.getShieldCost(1) < FLOOR + (20 // turns_to_lose):
             self.shield(1)
+
+    def accel_to_floor(self):
+        (turns_to_lose, _) = self.turns_to_lose()
+        floor = ACCEL_LOW_FLOOR + (500 // turns_to_lose)
+        while self.game.getAccelerateCost(1) < floor:
+            self.accelerate(1)
 
     def stop_opponent(self, opponent_idx, max_cost=10000):
         if opponent_idx < self.idx:
@@ -83,7 +81,7 @@ class DecaySmart:
                 self.superShell(1)
             else:
                 self.shell(shell_amt)
-        else:
+        elif self.game.getBananaCost() < max_cost:
             self.banana()
 
     def bananas_between(self, opponent_idx):
