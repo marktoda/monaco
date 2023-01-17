@@ -31,8 +31,11 @@ class Decay:
             if not self.superShell(1):
                 self.shell(1)
 
+        # avoid div/0
+        overall_turns_to_win = 1
+
         # try to make it 0 :)
-        if turns_to_win == 1:
+        if turns_to_win < 10:
             speed_needed = (1000 - ourCar.y) - ourCar.speed
             if self.accelerate(speed_needed):
                 if not self.superShell(1):
