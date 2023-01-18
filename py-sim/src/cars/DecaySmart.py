@@ -37,11 +37,11 @@ class DecaySmart:
         # someone else is about to win
         if turns_to_lose == 0:
             self.stop_opponent(best_opponent_idx)
-            self.accelerate(10)
+            self.accelerate(self.max_accel(ourCar.balance))
             # avoid div/0
             turns_to_lose = 1
         elif turns_to_lose < 5:
-            self.stop_opponent(best_opponent_idx, 100)
+            self.stop_opponent(best_opponent_idx, 200)
             self.accelerate(20 // turns_to_lose)
         else:
             # always buy accel if cheap, ramp up later on in game
@@ -49,20 +49,21 @@ class DecaySmart:
 
 
         # literally so cheap why not
-        if game.getShellCost(1) < FLOOR + (100 // turns_to_lose):
+        if game.getShellCost(1) < FLOOR:
             self.shell(1)
-        if game.getSuperShellCost(1) < FLOOR + (200 // turns_to_lose):
+        if game.getSuperShellCost(1) < FLOOR:
             self.superShell(1)
-        if game.getBananaCost() < FLOOR + (20 // turns_to_lose):
+        if game.getBananaCost() < FLOOR:
             self.banana()
-        if game.getShieldCost(1) < FLOOR + (20 // turns_to_lose):
+        if game.getShieldCost(1) < FLOOR:
             self.shield(1)
 
     def accel_to_floor(self):
         (turns_to_lose, _) = self.turns_to_lose()
         floor = ACCEL_LOW_FLOOR + (500 // turns_to_lose)
         while self.game.getAccelerateCost(1) < floor:
-            self.accelerate(1)
+            if not self.accelerate(1):
+                return
 
     def stop_opponent(self, opponent_idx, max_cost=10000):
         if opponent_idx < self.idx:
@@ -77,7 +78,7 @@ class DecaySmart:
             if super_cost > max_cost and shell_cost > max_cost:
                 return
 
-            if super_cost < shell_cost:
+            if super_cost <= shell_cost:
                 self.superShell(1)
             else:
                 self.shell(shell_amt)
