@@ -5,6 +5,7 @@ from enum import Enum
 from cars.ExampleCar import ExampleCar
 from cars.LearningCar import LearningCar
 from cars.c000r import C000r
+from cars.TurnOptimizer import TurnOptimizer
 from cars.Decay import Decay
 from cars.DecaySmart import DecaySmart
 from cars.Floor import Floor
@@ -19,6 +20,7 @@ class CarType(Enum):
     FLOOR = "Floor"
     SAUCE = "Sauce"
     RANDO = "Random"
+    TURN_OPTIMIZER = "TurnOptimizer"
     DECAY = "Decay"
     DECAY_SMART = "DecaySmart"
     C000r = "C000r"
@@ -55,6 +57,8 @@ def create_car(type):
         return Decay()
     if type == CarType.DECAY_SMART:
         return DecaySmart()
+    if type == CarType.TURN_OPTIMIZER:
+        return TurnOptimizer()
     if type == CarType.RANDO:
         return Rando()
     if type == CarType.C000r:
@@ -124,7 +128,7 @@ def main():
 
             # update stats
             if c[len(c) - 1][1] >= 1000:
-                if CarType.DECAY_SMART in p and p[j] is not CarType.DECAY_SMART:
+                if CarType.TURN_OPTIMIZER in p and p[j] is not CarType.TURN_OPTIMIZER:
                     print("WE LOSE!")
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
                 stats[p[j]]["wins"] += 1
