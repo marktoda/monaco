@@ -88,7 +88,7 @@ class GamePrinter:
             car_name_display.addstr(f"\tbalance: {state.balance}\n")
             car_name_display.addstr(f"\tshield: {state.shield}\n\n")
             if not is_turn:
-                car_name_display.addstr(f"\n\n\n\n\n")
+                car_name_display.addstr(f"\n\n")
             else:
                 car_name_display.addstr(self.get_action_str(turn_idx))
         car_name_display.refresh()
@@ -108,7 +108,7 @@ class GamePrinter:
         commands_display.addstr(f"\tShell: {shell}\n")
         commands_display.addstr(f"\tSuper: {super}\n")
         commands_display.addstr(f"\tShield: {shield}\n")
-        commands_display.addstr(f"\tBanana: {banana}\n")
+        commands_display.addstr(f"\tBanana: {banana}")
         commands_display.refresh()
 
     def get_action_str(self, turn_idx):
@@ -132,7 +132,7 @@ class GamePrinter:
             lines_used += 1
 
         if banana > prev_banana:
-            result += f"\t- Banana {banana - prev_banana}\n"
+            result += f"\t- Banana {banana - prev_banana}"
             lines_used += 1
 
         if shield > prev_shield:
@@ -151,7 +151,7 @@ class GamePrinter:
         win.addstr("-" * (total_ticks - tick_space - 1))
         win.addstr("\n\n")
         win.addstr("=" * (total_ticks + 2))
-        win.addstr("\n\n\n\n\n\n\n")
+        win.addstr("\n\n\n\n\n")
 
 
 

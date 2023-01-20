@@ -3,7 +3,7 @@ FLOOR = 5
 
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
-class DecaySmart:
+class DecaySmart2:
     def __init__(self):
         self.turns = 0
 
@@ -16,7 +16,7 @@ class DecaySmart:
         self.game = game
         self.bananas = bananas
         turns_to_win = (1000 - ourCar.y) // ourCar.speed if ourCar.speed > 0 else 1000
-        (turns_to_lose, best_opponent_idx) = self.turns_to_lose()
+        (turns_to_lose, best_opponent_idx) = self.turns_to_lose_optimistic()
 
         # no need to accelerate, were about to win
         # just shell everyone
@@ -59,7 +59,7 @@ class DecaySmart:
             self.shield(1)
 
     def accel_to_floor(self):
-        (turns_to_lose, _) = self.turns_to_lose()
+        (turns_to_lose, _) = self.turns_to_lose_optimistic()
         floor = ACCEL_LOW_FLOOR + (500 // turns_to_lose)
         while self.game.getAccelerateCost(1) < floor:
             if not self.accelerate(1):
@@ -105,6 +105,19 @@ class DecaySmart:
             if i is not self.idx:
                 max_speed = car.speed + self.max_accel(car.balance)
                 turns_to_win = (1000 - car.y) // max_speed if max_speed > 0 else 1000
+                if turns_to_win < worst:
+                    worst = turns_to_win
+                    worst_idx = i
+        return worst, worst_idx
+
+    # Instead of assuming all money goes to acceleration, assume 60% goes to acceleration, 40% to defense
+    def turns_to_lose_optimistic(self):
+        worst = 1000
+        worst_idx = 0
+        for i, car in enumerate(self.cars):
+            if i is not self.idx:
+                assumed_speed = car.speed + self.max_accel(0.6*car.balance)
+                turns_to_win = (1000 - car.y) // assumed_speed if assumed_speed > 0 else 1000
                 if turns_to_win < worst:
                     worst = turns_to_win
                     worst_idx = i
