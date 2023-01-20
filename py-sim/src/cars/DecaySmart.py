@@ -4,9 +4,6 @@ FLOOR = 5
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
 class DecaySmart:
-    def __init__(self):
-        self.turns = 0
-
 
     def takeYourTurn(self, game, cars, bananas, idx):
         ourCar = cars[idx]

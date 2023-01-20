@@ -12,6 +12,7 @@ import "../src/cars/samples/ThePackage.sol";
 import {ExampleCar} from "../src/cars/ExampleCar.sol";
 import {c000r} from "../src/cars/samples/c000r.sol";
 import {PermaShield} from "../src/cars/samples/PermaShield.sol";
+import {DecaySmart} from "../src/cars/DecaySmart.sol";
 import {Sauce} from "../src/cars/samples/Saucepoint.sol";
 import {MadCar} from "../src/cars/samples/MadCar.sol";
 import {Floor} from "../src/cars/samples/Floor.sol";
@@ -50,12 +51,12 @@ contract MonacoTest is Test {
     }
 
     function testGames() public {
-        ICar w1 = new PermaShield();
-        ICar w2 = new Sauce();
-        ICar w3 = new Floor();
-        emit log_named_address("\tPermaShield", address(w1));
+        ICar w1 = new DecaySmart();
+        ICar w2 = new Floor();
+        ICar w3 = new c000r();
+        emit log_named_address("\tDecaySmart", address(w1));
         emit log_named_address("\tSauce", address(w2));
-        emit log_named_address("\tFloor", address(w3));
+        emit log_named_address("\tC000r", address(w3));
 
         monaco.register(w1);
         monaco.register(w2);
