@@ -3,8 +3,7 @@ FLOOR = 5
 
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
-class DecaySmart:
-
+class TurnOptimizer:
     def takeYourTurn(self, game, cars, bananas, idx):
         ourCar = cars[idx]
         self.cars = cars
@@ -31,18 +30,18 @@ class DecaySmart:
 
         # ACCEL DECISION MAKING
         # someone else is about to win
-        if turns_to_lose == 0:
-            self.stop_opponent(best_opponent_idx)
-            self.accelerate(self.max_accel(ourCar.balance))
-            # avoid div/0
-            turns_to_lose = 1
-        elif turns_to_lose < 5:
-            self.stop_opponent(best_opponent_idx, 200)
-            self.accelerate(20 // turns_to_lose)
-        else:
-            # always buy accel if cheap, ramp up later on in game
-            self.accel_to_floor()
+        if turns_to_lose < 1:
+            self.stop_opponent(best_opponent_idx, 10000)
+        elif turns_to_lose < 2:
+            self.stop_opponent(best_opponent_idx, 5000)
+        elif turns_to_lose < 3:
+            self.stop_opponent(best_opponent_idx, 3000)
+        elif turns_to_lose < 6:
+            self.stop_opponent(best_opponent_idx, int(1000 / turns_to_lose))
 
+
+        max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
+        self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
 
         # literally so cheap why not
         if game.getShellCost(1) < FLOOR:
@@ -53,6 +52,27 @@ class DecaySmart:
             self.banana()
         if game.getShieldCost(1) < FLOOR:
             self.shield(1)
+
+    def try_lower_turns_to_win(self, turns_to_win, max_accel_cost):
+        our_car = self.cars[self.idx]
+        max_accel_possible = self.max_accel(min(our_car.balance, max_accel_cost))
+        if max_accel_possible == 0:
+            return
+
+        new_turns_to_win = (1000 - our_car.y) // (our_car.speed + max_accel_possible)
+        # no amount of accel will help us
+        if new_turns_to_win == turns_to_win:
+            return turns_to_win
+
+        # now iterate down and see the least speed that still gets the same accel possible
+        least_accel = max_accel_possible
+        for accel in range(max_accel_possible - 1, 0, -1):
+            ttw = (1000 - our_car.y) // (our_car.speed + accel)
+            if ttw > new_turns_to_win:
+                least_accel = accel + 1
+                break
+
+        self.accelerate(least_accel)
 
     def accel_to_floor(self):
         (turns_to_lose, _) = self.turns_to_lose()
@@ -68,6 +88,11 @@ class DecaySmart:
                 return
 
             super_cost = self.game.getSuperShellCost(1)
+
+            if self.cars[opponent_idx].shield > 0 and super_cost < max_cost:
+                self.superShell(1)
+                return
+
             # enough shells to kill all bananas and stop them
             shell_amt = self.bananas_between(opponent_idx) + 1
             shell_cost = self.game.getShellCost(shell_amt)
@@ -112,6 +137,7 @@ class DecaySmart:
             if self.game.getAccelerateCost(x) > balance:
                 return best
             best = x
+        return best
 
     def max_shell(self, balance):
         best = 0
@@ -121,6 +147,9 @@ class DecaySmart:
             best = x
 
     def accelerate(self, amount):
+        if amount == 0:
+            return
+
         car = self.cars[self.idx]
         if car.balance > self.game.getAccelerateCost(amount):
             car.balance -= self.game.buyAcceleration(amount)
@@ -128,6 +157,9 @@ class DecaySmart:
         return False
 
     def shell(self, amount):
+        if amount == 0:
+            return
+
         car = self.cars[self.idx]
         if car.balance > self.game.getShellCost(amount):
             car.balance -= self.game.buyShell(amount)
@@ -135,6 +167,9 @@ class DecaySmart:
         return False
 
     def superShell(self, amount):
+        if amount == 0:
+            return
+
         car = self.cars[self.idx]
         if car.balance > self.game.getSuperShellCost(amount):
             car.balance -= self.game.buySuperShell(amount)
@@ -142,6 +177,9 @@ class DecaySmart:
         return False
 
     def shield(self, amount):
+        if amount == 0:
+            return
+
         car = self.cars[self.idx]
         if car.balance > self.game.getShieldCost(amount):
             car.balance -= self.game.buyShield(amount)

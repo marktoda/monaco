@@ -66,22 +66,27 @@ contract TurnOptimizer is ICar {
 
     function tryLowerTurnsToWin(Monaco monaco, Monaco.CarData memory ourCar, uint256 turnsToWin, uint256 maxAccelCost) internal returns (uint256 newTurnsToWin) {
         uint256 maxAccelPossible = maxAccel(monaco, maxAccelCost > ourCar.balance ? ourCar.balance : maxAccelCost);
-        for (uint256 turns = 1; turns < turnsToWin; turns++) {
-            uint256 speedNeeded = (1000 - ourCar.y) / turns;
-            // we are already optimized, return
-            if (ourCar.speed > speedNeeded) {
-                return turnsToWin;
-            }
-
-            uint256 accelNeeded = speedNeeded - ourCar.speed;
-            if (accelNeeded > maxAccelPossible) {
-                continue;
-            }
-
-            accelerate(monaco, ourCar, accelNeeded);
-            return turns;
+        if (maxAccelPossible == 0) {
+            return turnsToWin;
         }
-        return turnsToWin;
+
+        uint256 bestTurnsToWin = (1000 - ourCar.y) / (ourCar.speed + maxAccelPossible);
+
+        // no amount of accel will lower our ttw
+        if (bestTurnsToWin == turnsToWin) {
+            return turnsToWin;
+        }
+
+        // iterate down and see the least speeda that still gets the best ttw
+        uint256 leastAccel = maxAccelPossible;
+        for (uint256 accel = maxAccelPossible; accel > 0; accel--) {
+            uint256 newTurnsToWin = (1000 - ourCar.y) / (ourCar.speed + accel);
+            if (newTurnsToWin > bestTurnsToWin) {
+                leastAccel = accel + 1;
+                break;
+            }
+        }
+        accelerate(monaco, ourCar, leastAccel);
     }
 
     function accelToFloor(Monaco monaco, Monaco.CarData memory ourCar, uint256 turnsToLose) internal {
