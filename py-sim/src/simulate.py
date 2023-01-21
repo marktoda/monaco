@@ -8,6 +8,7 @@ from cars.c000r import C000r
 from cars.Decay import Decay
 from cars.DecaySmart import DecaySmart
 from cars.DecaySmart2 import DecaySmart2
+from cars.DecaySmartBanana import DecaySmartBanana
 from cars.Floor import Floor
 from cars.Sauce import Sauce
 from cars.Rando import Rando
@@ -24,6 +25,7 @@ class CarType(Enum):
     DECAY_SMART = "DecaySmart"
     DECAY_SMART_2 = "DecaySmart2"
     C000r = "C000r"
+    DECAY_SMART_B = "DecaySmartBanana"
 
 stored_inputs=\
 [2.99302436,-6.19551457,-0.11540604,-4.14079942,-5.35729832
@@ -65,6 +67,8 @@ def create_car(type):
         return LearningCar(stored_inputs)
     if type == CarType.DECAY_SMART_2:
         return DecaySmart2()
+    if type == CarType.DECAY_SMART_B:
+        return DecaySmartBanana()
     else:
         raise Exception("Unsupported car")
 
