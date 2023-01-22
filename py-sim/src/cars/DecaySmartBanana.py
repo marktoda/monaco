@@ -3,16 +3,21 @@ FLOOR = 5
 
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
-class DecaySmart:
+class DecaySmartBanana:
+    def __init__(self):
+        self.turns = 0
+
 
     def takeYourTurn(self, game, cars, bananas, idx):
         ourCar = cars[idx]
+        self.turns += 1
         self.cars = cars
         self.idx = idx
         self.game = game
         self.bananas = bananas
         turns_to_win = (1000 - ourCar.y) // ourCar.speed if ourCar.speed > 0 else 1000
-        (turns_to_lose, best_opponent_idx) = self.turns_to_lose()
+        (turns_to_lose, best_opponent_idx) = self.turns_to_lose_optimistic()
+        (banana_distance, banana_index) = self.get_closest_banana()
 
         # no need to accelerate, were about to win
         # just shell everyone
@@ -22,12 +27,29 @@ class DecaySmart:
             return
 
         # if we can buy enough acceleration to win right away, do it
+        # ONLY IF THERE ARE NOT BANANAS IN THE WAY
         accel_to_win = (1000 - ourCar.y) - ourCar.speed
         if self.max_accel(ourCar.balance) >= accel_to_win:
-            self.accelerate(accel_to_win)
-            self.stop_opponent(best_opponent_idx)
-            self.accelerate(self.max_accel(ourCar.balance))
-            return
+            if banana_distance > 1000: # there are no bananas in the way
+                self.accelerate(accel_to_win)
+                self.stop_opponent(best_opponent_idx)
+                self.accelerate(self.max_accel(ourCar.balance))
+                return
+            else:
+                # there is a banana in the way but we are close to winning so lets get rid of the banana and try accelerating again
+                # either accelerate right up until the banana or throw a shell
+                cost_to_kill_banana = self.game.getShellCost(banana_distance)
+                ratio = cost_to_kill_banana // ourCar.balance if ourCar.balance > 0 else 1
+                if ratio < 1 // 2:
+                    # if the cost of the banana is relatively low compared to overall balance lets nuke it
+                    self.shell(banana_distance)
+                    # technically there could be more bananas in the way... but lets just try this for now
+                    self.accelerate(accel_to_win)
+                else :
+                    # cost to shell is too high lets just accelerate right up until the banana ? maybe someone will nuke it for us
+                    self.accelerate(banana_distance - 1)
+
+        
 
         # ACCEL DECISION MAKING
         # someone else is about to win
@@ -55,7 +77,7 @@ class DecaySmart:
             self.shield(1)
 
     def accel_to_floor(self):
-        (turns_to_lose, _) = self.turns_to_lose()
+        (turns_to_lose, _) = self.turns_to_lose_optimistic()
         floor = ACCEL_LOW_FLOOR + (500 // turns_to_lose)
         while self.game.getAccelerateCost(1) < floor:
             if not self.accelerate(1):
@@ -91,6 +113,33 @@ class DecaySmart:
             if b >= our_y and b <= their_y:
                 count += 1
         return count
+
+    def calculate_banana_hit(self):
+        (distance, index) = self.get_closest_banana()
+    
+
+    def turns_to_lose_optimistic(self):
+        worst = 1000
+        worst_idx = 0
+        for i, car in enumerate(self.cars):
+            if i is not self.idx:
+                assumed_speed = car.speed + self.max_accel(0.6*car.balance)
+                turns_to_win = (1000 - car.y) // assumed_speed if assumed_speed > 0 else 1000
+                if turns_to_win < worst:
+                    worst = turns_to_win
+                    worst_idx = i
+        return worst, worst_idx
+        
+
+    def get_closest_banana(self):
+        closest = 1001
+        index = 0
+        for i in range(len(self.bananas)):
+            distance = self.bananas[i] - self.cars[self.idx].y
+            if distance > 0 and distance < closest:
+                closest = distance
+                index = i
+        return closest, index
 
     # worst case turns to lose, if opponents spend all money on acceleration
     # potentially could use an avg case turns to lose as a heuristic somewhere?
