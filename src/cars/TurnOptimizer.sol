@@ -15,7 +15,7 @@ contract TurnOptimizer is ICar {
     ) external override {
         Monaco.CarData memory ourCar = allCars[ourCarIndex];
         uint256 turnsToWin = ourCar.speed == 0 ? 1000 : (1000 - ourCar.y) / ourCar.speed;
-        (uint256 turnsToLose, uint256 bestOpponentIdx) = getTurnsToLose(monaco, allCars, ourCarIndex);
+        (uint256 turnsToLose, uint256 bestOpponentIdx) = getTurnsToLoseOptimistic(monaco, allCars, ourCarIndex);
 
         // were about to win this turn, no need to accelerate
         // just shell everyone
@@ -113,6 +113,21 @@ contract TurnOptimizer is ICar {
         } else if (monaco.getBananaCost() < maxCost) {
             // behind so banana
             banana(monaco, ourCar);
+        }
+    }
+
+    function getTurnsToLoseOptimistic(Monaco monaco, Monaco.CarData[] calldata allCars, uint256 ourCarIndex) internal returns (uint256 turnsToLose, uint256 bestOpponentIdx) {
+        turnsToLose = 1000;
+        for (uint256 i = 0; i < allCars.length; i++) {
+            if (i != ourCarIndex) {
+                Monaco.CarData memory car = allCars[i];
+                uint256 maxSpeed = car.speed + maxAccel(monaco, car.balance * 6 / 10);
+                uint256 turns = maxSpeed == 0 ? 1000 : (1000 - car.y) / maxSpeed;
+                if (turns < turnsToLose) {
+                    turnsToLose = turns;
+                    bestOpponentIdx = i;
+                }
+            }
         }
     }
 

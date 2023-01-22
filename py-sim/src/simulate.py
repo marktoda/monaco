@@ -6,6 +6,8 @@ from cars.ExampleCar import ExampleCar
 from cars.LearningCar import LearningCar
 from cars.c000r import C000r
 from cars.TurnOptimizer import TurnOptimizer
+from cars.TurnOptimizer3 import TurnOptimizer3
+from cars.TurnOptimizer4 import TurnOptimizer4
 from cars.Decay import Decay
 from cars.DecaySmart import DecaySmart
 from cars.DecaySmart2 import DecaySmart2
@@ -21,10 +23,9 @@ class CarType(Enum):
     LEARNING_CAR = "LearningCar"
     FLOOR = "Floor"
     SAUCE = "Sauce"
-    RANDO = "Random"
     TURN_OPTIMIZER = "TurnOptimizer"
-    DECAY = "Decay"
-    DECAY_SMART = "DecaySmart"
+    TURN_OPTIMIZER_3 = "TurnOptimizer3"
+    TURN_OPTIMIZER_4 = "TurnOptimizer4"
     DECAY_SMART_2 = "DecaySmart2"
     C000r = "C000r"
     DECAY_SMART_B = "DecaySmartBanana"
@@ -57,14 +58,12 @@ def create_car(type):
         return Floor()
     if type == CarType.SAUCE:
         return Sauce()
-    if type == CarType.DECAY:
-        return Decay()
-    if type == CarType.DECAY_SMART:
-        return DecaySmart()
     if type == CarType.TURN_OPTIMIZER:
         return TurnOptimizer()
-    if type == CarType.RANDO:
-        return Rando()
+    if type == CarType.TURN_OPTIMIZER_3:
+        return TurnOptimizer3()
+    if type == CarType.TURN_OPTIMIZER_4:
+        return TurnOptimizer4()
     if type == CarType.C000r:
         return C000r()
     if type == CarType.LEARNING_CAR:
@@ -136,7 +135,7 @@ def main():
 
             # update stats
             if c[len(c) - 1][1] >= 1000:
-                if CarType.TURN_OPTIMIZER in p and p[j] is not CarType.TURN_OPTIMIZER:
+                if CarType.TURN_OPTIMIZER_4 in p and p[j] is not CarType.TURN_OPTIMIZER_4:
                     print("WE LOSE!")
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
                 stats[p[j]]["wins"] += 1

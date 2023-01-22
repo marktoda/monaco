@@ -3,13 +3,31 @@ FLOOR = 5
 
 # The turn-based decay on prices seems v strong
 # this car attempts to exploit that
-class TurnOptimizer:
+class TurnOptimizer4:
+    def __init__(self):
+        self.prev_idx = 0
+        self.turns_in_second = 0
+        self.prev_speed = 0
+        self.shelled_count = 0
+        self.chilling = False
+
     def takeYourTurn(self, game, cars, bananas, idx):
         ourCar = cars[idx]
         self.cars = cars
         self.idx = idx
         self.game = game
         self.bananas = bananas
+
+        if idx == 1 and self.prev_idx == 1:
+            self.turns_in_second += 1
+        elif idx == 1:
+            self.turns_in_second = 1
+        else:
+            self.turns_in_second = 0
+
+        if self.prev_speed > 1 and ourCar.speed == 1:
+            self.shelled_count += 1
+
         turns_to_win = (1000 - ourCar.y) // ourCar.speed if ourCar.speed > 0 else 1000
         (turns_to_lose, best_opponent_idx) = self.turns_to_lose_optimistic()
 
@@ -36,12 +54,37 @@ class TurnOptimizer:
             self.stop_opponent(best_opponent_idx, 5000)
         elif turns_to_lose < 3:
             self.stop_opponent(best_opponent_idx, 3000)
+        elif turns_to_lose < 4:
+            self.stop_opponent(best_opponent_idx, 2000)
         elif turns_to_lose < 6:
             self.stop_opponent(best_opponent_idx, int(1000 / turns_to_lose))
+        elif turns_to_lose < 10:
+            self.stop_opponent(best_opponent_idx, int(500 / turns_to_lose))
 
-
-        max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
-        self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
+        # accel logic
+        # - chill if were in front of a shelloor
+        # - else optimize ttw
+        if turns_to_lose > 10 and self.chilling:
+            if idx == 2:
+                # match speed
+                target_speed = cars[1].speed
+                max_accel = max(0, target_speed - ourCar.speed)
+                if max_accel != 0:
+                    self.accel_to_max(max_accel, int(4000 / turns_to_lose))
+                pass
+            else:
+                # we need to sit and wait for the shelloorr to pass us
+                pass
+            return
+        elif turns_to_lose > 10 and self.turns_in_second > 1 and self.shelled_count > 1 and not self.chilling:
+            # no accelerate cuz its a waste
+            # shell or super shell if cheap
+            self.stop_opponent(best_opponent_idx, int(2000 / turns_to_lose))
+            self.chilling = True
+            return
+        else:
+            max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
+            self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
 
         # literally so cheap why not
         if game.getShellCost(1) < FLOOR:
@@ -52,6 +95,9 @@ class TurnOptimizer:
             self.banana()
         if game.getShieldCost(1) < FLOOR:
             self.shield(1)
+
+        self.prev_idx = idx
+        self.prev_speed = ourCar.speed
 
     def try_lower_turns_to_win(self, turns_to_win, max_accel_cost):
         our_car = self.cars[self.idx]
@@ -74,37 +120,48 @@ class TurnOptimizer:
 
         self.accelerate(least_accel)
 
-    def accel_to_floor(self):
-        (turns_to_lose, _) = self.turns_to_lose()
-        floor = ACCEL_LOW_FLOOR + (500 // turns_to_lose)
-        while self.game.getAccelerateCost(1) < floor:
+    def accel_to_max(self, max_speed, max_cost):
+        if self.game.getAccelerateCost(max_speed) < max_cost:
+            return self.accelerate(max_speed)
+
+        # else iterate until at max cost
+        total_spent = self.game.getAccelerateCost(1)
+        total_speed = 0
+        while total_spent < max_cost and total_speed < max_speed:
             if not self.accelerate(1):
                 return
+            total_spent += self.game.getAccelerateCost(1)
+            total_speed += 1
 
     def stop_opponent(self, opponent_idx, max_cost=10000):
+        opponent_car = self.cars[opponent_idx]
+        # if y equals, bananas and shells are pointless
+        if opponent_car.y == self.cars[self.idx].y:
+            return False
+
         if opponent_idx < self.idx:
             # no point shelling
-            if self.cars[opponent_idx].speed == 1:
-                return
+            if opponent_car.speed == 1:
+                return False
 
             super_cost = self.game.getSuperShellCost(1)
 
-            if self.cars[opponent_idx].shield > 0 and super_cost < max_cost:
-                self.superShell(1)
-                return
+            if opponent_car.shield > 0 and super_cost < max_cost:
+                return self.superShell(1)
 
             # enough shells to kill all bananas and stop them
             shell_amt = self.bananas_between(opponent_idx) + 1
             shell_cost = self.game.getShellCost(shell_amt)
             if super_cost > max_cost and shell_cost > max_cost:
-                return
+                return False
 
             if super_cost <= shell_cost:
-                self.superShell(1)
+                return self.superShell(1)
             else:
-                self.shell(shell_amt)
+                return self.shell(shell_amt)
         elif self.game.getBananaCost() < max_cost:
-            self.banana()
+            return self.banana()
+        return False
 
     def bananas_between(self, opponent_idx):
         our_y = self.cars[self.idx].y

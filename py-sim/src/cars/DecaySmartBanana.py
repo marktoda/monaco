@@ -49,7 +49,7 @@ class DecaySmartBanana:
                     # cost to shell is too high lets just accelerate right up until the banana ? maybe someone will nuke it for us
                     self.accelerate(banana_distance - 1)
 
-        
+
 
         # ACCEL DECISION MAKING
         # someone else is about to win
@@ -116,7 +116,7 @@ class DecaySmartBanana:
 
     def calculate_banana_hit(self):
         (distance, index) = self.get_closest_banana()
-    
+
 
     def turns_to_lose_optimistic(self):
         worst = 1000
@@ -129,7 +129,7 @@ class DecaySmartBanana:
                     worst = turns_to_win
                     worst_idx = i
         return worst, worst_idx
-        
+
 
     def get_closest_banana(self):
         closest = 1001
