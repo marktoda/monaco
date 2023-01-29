@@ -171,6 +171,9 @@ class DecaySmartBanana:
             best = x
 
     def accelerate(self, amount):
+        if amount == 0:
+            return
+
         car = self.cars[self.idx]
         if car.balance > self.game.getAccelerateCost(amount):
             car.balance -= self.game.buyAcceleration(amount)
@@ -178,6 +181,8 @@ class DecaySmartBanana:
         return False
 
     def shell(self, amount):
+        if amount == 0:
+            return
         car = self.cars[self.idx]
         if car.balance > self.game.getShellCost(amount):
             car.balance -= self.game.buyShell(amount)
@@ -185,6 +190,8 @@ class DecaySmartBanana:
         return False
 
     def superShell(self, amount):
+        if amount == 0:
+            return
         car = self.cars[self.idx]
         if car.balance > self.game.getSuperShellCost(amount):
             car.balance -= self.game.buySuperShell(amount)
@@ -192,6 +199,8 @@ class DecaySmartBanana:
         return False
 
     def shield(self, amount):
+        if amount == 0:
+            return
         car = self.cars[self.idx]
         if car.balance > self.game.getShieldCost(amount):
             car.balance -= self.game.buyShield(amount)

@@ -30,6 +30,8 @@ class TurnOptimizer4:
 
         turns_to_win = (1000 - ourCar.y) // ourCar.speed if ourCar.speed > 0 else 1000
         (turns_to_lose, best_opponent_idx) = self.turns_to_lose_optimistic()
+        if turns_to_lose < 5:
+            (turns_to_lose, best_opponent_idx) = self.turns_to_lose()
 
         # no need to accelerate, were about to win
         # just shell everyone
@@ -82,6 +84,12 @@ class TurnOptimizer4:
             self.stop_opponent(best_opponent_idx, int(2000 / turns_to_lose))
             self.chilling = True
             return
+        elif turns_to_lose > 3 and turns_to_lose < 10 and idx == 1:
+            # sneak into close second
+            target_speed = cars[0].speed
+            max_accel = max(0, target_speed - ourCar.speed)
+            if max_accel != 0:
+                self.accel_to_max(max_accel, int(2000 / turns_to_lose))
         else:
             max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
             self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
@@ -194,6 +202,7 @@ class TurnOptimizer4:
         worst_idx = 0
         for i, car in enumerate(self.cars):
             if i is not self.idx:
+                # end-game, assume oppo more likely to use full balance
                 assumed_speed = car.speed + self.max_accel(0.6*car.balance)
                 turns_to_win = (1000 - car.y) // assumed_speed if assumed_speed > 0 else 1000
                 if turns_to_win < worst:
