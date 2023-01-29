@@ -6,6 +6,7 @@ from cars.ExampleCar import ExampleCar
 from cars.LearningCar import LearningCar
 from cars.c000r import C000r
 from cars.TurnOptimizer import TurnOptimizer
+from cars.Lagger import Lagger
 from cars.TurnOptimizer3 import TurnOptimizer3
 from cars.TurnOptimizer4 import TurnOptimizer4
 from cars.Decay import Decay
@@ -29,6 +30,7 @@ class CarType(Enum):
     DECAY_SMART_2 = "DecaySmart2"
     C000r = "C000r"
     DECAY_SMART_B = "DecaySmartBanana"
+    LAGGER = "Lagger"
 
 stored_inputs=\
 [2.99302436,-6.19551457,-0.11540604,-4.14079942,-5.35729832
@@ -72,6 +74,8 @@ def create_car(type):
         return DecaySmart2()
     if type == CarType.DECAY_SMART_B:
         return DecaySmartBanana()
+    if type == CarType.LAGGER:
+        return Lagger()
     else:
         raise Exception("Unsupported car")
 
