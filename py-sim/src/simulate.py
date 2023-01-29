@@ -25,8 +25,6 @@ class CarType(Enum):
     FLOOR = "Floor"
     SAUCE = "Sauce"
     TURN_OPTIMIZER = "TurnOptimizer"
-    TURN_OPTIMIZER_3 = "TurnOptimizer3"
-    TURN_OPTIMIZER_4 = "TurnOptimizer4"
     DECAY_SMART_2 = "DecaySmart2"
     C000r = "C000r"
     DECAY_SMART_B = "DecaySmartBanana"
@@ -62,10 +60,6 @@ def create_car(type):
         return Sauce()
     if type == CarType.TURN_OPTIMIZER:
         return TurnOptimizer()
-    if type == CarType.TURN_OPTIMIZER_3:
-        return TurnOptimizer3()
-    if type == CarType.TURN_OPTIMIZER_4:
-        return TurnOptimizer4()
     if type == CarType.C000r:
         return C000r()
     if type == CarType.LEARNING_CAR:
@@ -139,7 +133,7 @@ def main():
 
             # update stats
             if c[len(c) - 1][1] >= 1000:
-                if CarType.TURN_OPTIMIZER_3 in p and p[j] is not CarType.TURN_OPTIMIZER_3:
+                if CarType.TURN_OPTIMIZER in p and p[j] is not CarType.TURN_OPTIMIZER:
                     print("WE LOSE!")
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
                 stats[p[j]]["wins"] += 1

@@ -43,6 +43,15 @@ class TurnOptimizer:
         max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
         self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
 
+        if turns_to_lose > 0:
+            max_cost = 20 if turns_to_lose > 10 else 500 // turns_to_lose
+            super_cost = game.getSuperShellCost(1)
+            shell_cost = game.getShellCost(1)
+            if super_cost < max_cost and super_cost < shell_cost:
+                self.superShell(1)
+            elif shell_cost < max_cost and shell_cost < super_cost:
+                self.shell(1)
+
         # literally so cheap why not
         if game.getShellCost(1) < FLOOR:
             self.shell(1)
