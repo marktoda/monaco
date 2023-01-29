@@ -39,53 +39,55 @@ class TurnOptimizer3:
         elif turns_to_lose < 6:
             self.stop_opponent(best_opponent_idx, int(1000 / turns_to_lose))
 
-        if idx == 0:
-            max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
-            self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
-        else:
-            if turns_to_lose == 0:
-                # div/0
-                turns_to_lose = 1
+        # if idx == 0:
+        #     max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
+        #     self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
+        # else:
+        #     if turns_to_lose == 0:
+        #         # div/0
+        #         turns_to_lose = 1
+        #
+        #     distance_from_opponent = cars[best_opponent_idx].y - ourCar.y
+        #     # turns_to_lose 30
+        #     # distance_from_opponent 300
+        #
+        #     # super fucked
+        #     if turns_to_lose < 3 and distance_from_opponent > turns_to_lose * 20:
+        #         # accel more
+        #         self.try_lower_turns_to_win(turns_to_win, 10000)
+        #     # kinda fucked
+        #     elif turns_to_lose < 6 and distance_from_opponent > turns_to_lose * 10:
+        #         self.try_lower_turns_to_win(turns_to_win, int(7000 / turns_to_lose))
+        #     # kinda fucked, midgame
+        #     elif turns_to_lose < 20 and distance_from_opponent > turns_to_lose * 10:
+        #         self.try_lower_turns_to_win(turns_to_win, int(distance_from_opponent * 10 / turns_to_lose))
+        #     # fine
+        #     else:
+        #         # accel less
+        #         self.try_lower_turns_to_win(turns_to_win, 10 + int(1000 / turns_to_lose))
+        #
+        max_accel_cost = 100000 if turns_to_lose == 0 else int(5000 / turns_to_lose) if turns_to_lose < 6 else 10 + int(1000 / turns_to_lose)
+        self.try_lower_turns_to_win(turns_to_win, max_accel_cost)
 
-            distance_from_opponent = cars[best_opponent_idx].y - ourCar.y
-            # turns_to_lose 30
-            # distance_from_opponent 300
 
-            # super fucked
-            if turns_to_lose < 3 and distance_from_opponent > turns_to_lose * 20:
-                # accel more
-                self.try_lower_turns_to_win(turns_to_win, 10000)
-            # kinda fucked
-            elif turns_to_lose < 6 and distance_from_opponent > turns_to_lose * 10:
-                self.try_lower_turns_to_win(turns_to_win, int(7000 / turns_to_lose))
-            # kinda fucked, midgame
-            elif turns_to_lose < 20 and distance_from_opponent > turns_to_lose * 10:
-                self.try_lower_turns_to_win(turns_to_win, int(distance_from_opponent * 10 / turns_to_lose))
-            # fine
-            else:
-                # accel less
-                self.try_lower_turns_to_win(turns_to_win, 10 + int(1000 / turns_to_lose))
-
-
-        # midgame kill bananas in our way
-        if turns_to_lose < 20 and turns_to_lose > 3:
-            # were in front, theres no nanners
-            # TODO: if theres bananas and too spendy to kill maybe dont accel
-            if idx != 0:
-                # cost of n shells to cost of super
-                # get the bananas b/t us and next car
-                # compare our accel and not kill ones too far ahead (like we wont even hit them)
-                opponent_y = cars[best_opponent_idx].y
-                our_y_in_3 = ourCar.y + (ourCar.speed * 3)
-                max_dist = min(opponent_y, our_y_in_3)
-                bananas_to_kill = self.bananas_between_max_dist(max_dist)
-                super_cost = game.getSuperShellCost(1)
-                shell_cost = game.getShellCost(bananas_to_kill + 1)
-                max_cost = 1000 // turns_to_lose
-                if super_cost < shell_cost and super_cost < max_cost:
-                    self.superShell(1)
-                elif shell_cost < super_cost and shell_cost < max_cost:
-                    self.shell(bananas_to_kill)
+        # kill bananas in our way
+        # were in front, theres no nanners
+        # TODO: if theres bananas and too spendy to kill maybe dont accel
+        if idx != 0 and turns_to_lose > 0:
+            # cost of n shells to cost of super
+            # get the bananas b/t us and next car
+            # compare our accel and not kill ones too far ahead (like we wont even hit them)
+            opponent_y = cars[best_opponent_idx].y
+            our_y_in_3 = ourCar.y + (ourCar.speed * 3)
+            max_dist = min(opponent_y, our_y_in_3)
+            bananas_to_kill = self.bananas_between_max_dist(max_dist)
+            super_cost = game.getSuperShellCost(1)
+            shell_cost = game.getShellCost(bananas_to_kill + 1)
+            max_cost = 20 if turns_to_lose > 10 else 500 // turns_to_lose
+            if super_cost < shell_cost and super_cost < max_cost:
+                self.superShell(1)
+            elif shell_cost < super_cost and shell_cost < max_cost:
+                self.shell(bananas_to_kill)
 
         # literally so cheap why not
         if game.getShellCost(1) < FLOOR:

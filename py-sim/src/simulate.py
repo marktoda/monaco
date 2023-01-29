@@ -139,7 +139,7 @@ def main():
 
             # update stats
             if c[len(c) - 1][1] >= 1000:
-                if CarType.TURN_OPTIMIZER_4 in p and p[j] is not CarType.TURN_OPTIMIZER_4:
+                if CarType.TURN_OPTIMIZER_3 in p and p[j] is not CarType.TURN_OPTIMIZER_3:
                     print("WE LOSE!")
                 print(f"Game {i} Winner: Car {j} {p[j]}, Turns: {len(c)}")
                 stats[p[j]]["wins"] += 1
